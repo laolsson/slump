@@ -1,0 +1,54 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+<title>Flask/Gevent WebSocket Test</title>
+    <script src="http://localhost:8090/js/jquery-1.10.1.min.js"></script>
+    <script type="text/javascript" charset="utf-8">
+		var x = 0;
+		var y = 0;
+		var changed = 0;
+        $(document).ready(function(){
+            if ("WebSocket" in window) {
+                cam = new WebSocket("ws://localhost:8090/websocket/XXX");
+                cam.onmessage = function (msg) {
+                    $("#cam").attr('src', 'data:image/jpg;base64,' + msg.data);
+					//cam.send(x + ':' + y + ':' + changed);
+					if (changed == 1)
+						changed = 0;
+                };
+                cam.onerror = function(e) {
+                    console.log(e);
+                }
+            } else {
+                alert("WebSocket not supported");
+            }
+        });
+		$(function() {
+		$("#cam").click(function(e) {
+		var offset = $(this).offset();
+		var relativeX = (e.pageX - offset.left);
+		var relativeY = (e.pageY - offset.top);
+		x = relativeX;
+		y = relativeY;
+		changed = 1;
+		$.ajax({
+			url: 'http://localhost:8090/click/XXX?x=' + x + '&y=' + y,
+			type: 'POST',
+			success: function(result) {
+				var x = 0;
+        // Do something with the result
+		},
+					error: function(result) {
+				var y = 0;
+         //Do something with the result
+		}
+});
+		$(".position").val("afaf");
+	});
+});
+    </script>
+</head>
+<body>
+    <img id="cam" src="" width="640" height="480" />
+</body>
+</html> 
