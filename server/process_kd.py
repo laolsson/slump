@@ -22,7 +22,7 @@ def timeit(method):
         return result
 
     return timed
-    
+
 import cProfile
 
 def do_cprofile(func):
@@ -116,7 +116,7 @@ def get_image_new(img_db, average, tile_width):
 
     return cache[closest][0]
 
-    
+
 def get_image(img_db, average, tile_width):
     global cache, used
     closest = None
@@ -176,21 +176,21 @@ def get_image_threaded(img_db, average, tile_width):
                 closest = k
 
         return closest
- 
 
 
- 
+
+
 
 # keep track of N smallest distances and select between them:
 #mins = items[:n]
 #mins.sort()
 #for i in items[n:]:
- #   if i < mins[-1]: 
+ #   if i < mins[-1]:
  #       mins.append(i)
  #       mins.sort()
  #       mins= mins[:n]
- 
- 
+
+
  # For kd use query(find, k), where k is k number of items to return
  # then pick one out of k
 
@@ -268,8 +268,8 @@ def process_image(image_path, img_db, out_file, tile_width=10, apply_ef=False):
     print 'cache size', len(cache)
 
     #img.save(out_file)
-    
-    
+
+
 def get_image_threaded(img_db, average, tile_width):
     global cache, used
     closest = None
@@ -287,7 +287,7 @@ def get_image_threaded(img_db, average, tile_width):
                 close_sum = diff
                 closest = k
 
-        
+
     return closest
 
 def get_image_kd_threaded(kd_db, average, tile_width):
@@ -298,15 +298,15 @@ def get_image_kd_threaded(kd_db, average, tile_width):
 
     return image_names[random.choice(res[1])]
 
-    
+
 def process_im_threaded(name, out_image, out, y_start, y_rows, average, x_tiles, y_tiles, tile_width, img_db, apply_ef):
     tile_count = 0
     print 'thread ', name, y_start, tile_width
-    
+
     img = Image.new("RGB", (x_tiles * tile_width, y_rows * tile_width))
-    
+
     image_cache = {}
-    
+
     for y in range(y_start, y_start + y_rows):
         for x in range(x_tiles):
 	    #print 'XXX', name, 'XXX  ', x, y
@@ -322,12 +322,12 @@ def process_im_threaded(name, out_image, out, y_start, y_rows, average, x_tiles,
 	    else:
 		im = image_cache[image_name]
 	    img.paste(im, (x * tile_width, y * tile_width - y_start * tile_width))
-	    
+
 	    #out_image.append(im)
 	    #print out_image
 	    #return
 	    tile_count = tile_count + 1
-	    
+
     img.save(name + '.png')
     #out_image.append(img)
 
@@ -337,28 +337,28 @@ import multiprocessing
 def process_image_threaded(image_path, img_db, out_file, tile_width=10, apply_ef=False):
     global cache
     print 'process ', image_path, tile_width
-    
+
     img = Image.open(image_path)
     x_tiles = img.size[0] / tile_width
     y_tiles = img.size[1] / tile_width
     start_average_time = time.time()
     average = get_average(img, x_tiles, y_tiles, tile_width)
     print 'Done average ', time.time() - start_average_time
- 
+
     total_tiles = y_tiles * x_tiles
     print 'process ', x_tiles, y_tiles, total_tiles
-   
+
     processes = []
     outs = []
     out_images = []
     # Split up in to N processes
     n_processes = multiprocessing.cpu_count() - 1
-    
+
     # how many rows per process
     rows_per_process = y_tiles / n_processes
-    
+
     start_process_time = time.time()
-    
+
     for p in range(n_processes):
         print p, n_processes
         out = multiprocessing.Manager().list()
@@ -374,26 +374,26 @@ def process_image_threaded(image_path, img_db, out_file, tile_width=10, apply_ef
         p.join()
 
     print 'Done processing ', time.time() - start_process_time
-	
+
     for o in outs:
         print 'LLLLLLLLLLLLLLL', len(o)
-	
+
     for o in out_images:
         print 'HHHHHHHH', o
 	#print o
-	
+
     # Now create the actual out image
     y = 0
     x = 0
-    
+
     start_image_time = time.time()
-    
+
     img = Image.new("RGB", (x_tiles * tile_width, y_tiles * tile_width))
-    
+
     for n in range(n_processes):
         im = Image.open(str(n) + '.png')
 	img.paste(im, (0, rows_per_process * tile_width * n))
-    
+
     # for o in outs:
         # for i in o:
 	    # #print y, x
@@ -404,7 +404,7 @@ def process_image_threaded(image_path, img_db, out_file, tile_width=10, apply_ef
             # else:
 	        # im = cache[i]
 	    # img.paste(im, (x * tile_width, y * tile_width))
-	    
+
 	    # if x == x_tiles - 1:
 	        # y = y + 1
 		# x = 0
@@ -481,11 +481,12 @@ def create_kd_db(db, tile_width):
 	image_names.append(k)
         i = i + 1
 
-    print list[604], len(list[604]), len(list)
-    tree = scipy.spatial.KDTree(list[0:605])
+    #print list[604], len(list[604]), len(list)
+    print list, len(list)
+    tree = scipy.spatial.KDTree(list)
     return tree
-    
-    
+
+
 def main(argv):
     input_image = argv[1]
     tile_width = int(argv[2])
@@ -496,40 +497,40 @@ def main(argv):
 
     import time
     s=time.time()
-    
+
     db = load_db(db_name)
-    
+
     kd_db = create_kd_db(db, tile_width)
 
     multiprocessing.freeze_support()
-    
+
     #import time
     #s=time.time()
     #process_image(input_image, db, out_image + '.orig.png', tile_width, False)
     #print 'Orig', time.time()-s
-    
+
     import time
     s=time.time()
     process_image_threaded(input_image, kd_db, out_image + '.orig.png', tile_width, False)
     print 'Orig', time.time()-s
-    
+
     #import time
     #s=time.time()
     #process_image_threaded(input_image, kd_db, out_image + '.orig.png', tile_width, False)
     #print 'Orig', time.time()-s
-    
+
     #global cache
     #cache = {}
-    
+
     #import time
     #s=time.time()
     #process_image_kd(input_image, kd_db, images, out_image, tile_width, False)
-    #print 'New', time.time()-s 
-    
+    #print 'New', time.time()-s
+
     #import time
     #s=time.time()
     #process_image_kd(input_image, kd_db, images, out_image, tile_width, False)
-    #print 'New', time.time()-s 
+    #print 'New', time.time()-s
 
 if __name__ == "__main__":
     main(sys.argv)

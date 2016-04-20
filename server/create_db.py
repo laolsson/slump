@@ -32,7 +32,7 @@ def create_db(image_dir):
             points = []
             for y in range(5):
                 for x in range(5):
-                    points.append(d2d[x, y])
+                    points.append(d2d[x, y][0:3])
             db[f] = points
             count = count + 1
         except Exception, e:
