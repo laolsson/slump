@@ -66,8 +66,8 @@ used = {}
 
 def diff_points(points, other_points):
     diff = 0
-    #for i in [12]:
-    for i in [0, 4, 12, 20, 24]:  # range(25):
+    for i in [12]:
+    #for i in [0, 4, 12, 20, 24]:  # range(25):
     #for i in range(25):
         diff = diff + math.fabs(points[i][0] - other_points[i][0]) + math.fabs(
             points[i][1] - other_points[i][1]) + math.fabs(points[i][2] - other_points[i][2])
@@ -198,7 +198,7 @@ def get_image_kd(kd_db, images, average, tile_width):
     global cache, used
     #find = np.array(average[12])# + average[4] + average[12] + average[20] + average[24])
     find = np.array(average[0] + average[4] + average[12] + average[20] + average[24])
-    res = kd_db.query(find, 10)
+    res = kd_db.query(find, 20)
 
     closest = images[random.choice(res[1])]
 
@@ -258,7 +258,7 @@ def process_image(image_path, img_db, out_file, tile_width=10, apply_ef=False):
         for x in range(x_tiles):
             if tile_count % 100 == 0:
                 print tile_count, ' out of ', total_tiles, ' cache size:', len(cache)
-            lm = get_image_new(img_db, average[x + y * x_tiles], tile_width=tile_width)
+            lm = get_image(img_db, average[x + y * x_tiles], tile_width=tile_width)
             if apply_ef:
                 av = average_points(average[x + y * x_tiles])
                 lm = apply_effect(lm, *av)
@@ -267,7 +267,7 @@ def process_image(image_path, img_db, out_file, tile_width=10, apply_ef=False):
 
     print 'cache size', len(cache)
 
-    #img.save(out_file)
+    img.save(out_file)
     
     
 def get_image_threaded(img_db, average, tile_width):
@@ -481,8 +481,8 @@ def create_kd_db(db, tile_width):
 	image_names.append(k)
         i = i + 1
 
-    print list[604], len(list[604]), len(list)
-    tree = scipy.spatial.KDTree(list[0:605])
+    #print list[604], len(list[604]), len(list)
+    tree = scipy.spatial.KDTree(list)
     return tree
     
     
@@ -503,15 +503,19 @@ def main(argv):
 
     multiprocessing.freeze_support()
     
-    #import time
-    #s=time.time()
-    #process_image(input_image, db, out_image + '.orig.png', tile_width, False)
-    #print 'Orig', time.time()-s
-    
     import time
     s=time.time()
-    process_image_threaded(input_image, kd_db, out_image + '.orig.png', tile_width, False)
+    process_image(input_image, db, out_image + '.orig.png', tile_width, False)
     print 'Orig', time.time()-s
+
+    s=time.time()
+    process_image(input_image, db, out_image + '.orig.png', tile_width, False)
+    print 'Orig', time.time()-s
+
+    #import time
+    #s=time.time()
+    #process_image_threaded(input_image, kd_db, out_image + '.orig.png', tile_width, False)
+    #print 'Orig', time.time()-s
     
     #import time
     #s=time.time()
