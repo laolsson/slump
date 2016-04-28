@@ -1,0 +1,56 @@
+<html>
+<script src="https://sdk.amazonaws.com/js/aws-sdk-2.3.6.min.js"></script>
+<script type="text/javascript">
+  // See the Configuring section to configure credentials in the SDK
+  AWS.config.credentials = new AWS.Credentials('AKIAJJXPC2EE2O5RAECA', 'o53AWqNfc5X7mPveaJYq5X18CCpl9TxGrmIrJkiY');
+
+  // Configure your region
+  AWS.config.region = 'ap-northeast-1';
+</script>
+
+<input type="file" id="file-chooser" />
+<button id="upload-button">Upload to S3</button>
+<div id="results"></div>
+
+<script type="text/javascript">
+  var bucket = new AWS.S3({params: {Bucket: 'uploads-laolsson-com'}});
+
+  var fileChooser = document.getElementById('file-chooser');
+  var button = document.getElementById('upload-button');
+  var results = document.getElementById('results');
+  button.addEventListener('click', function() {
+    var file = fileChooser.files[0];
+    if (file) {
+      results.innerHTML = '';
+
+      var params = {Key: file.name, ContentType: file.type, Body: file};
+      bucket.upload(params, function (err, data) {
+        results.innerHTML = err ? 'ERROR!' : 'UPLOADED.';
+      });
+    } else {
+      results.innerHTML = 'Nothing to upload.';
+    }
+  }, false);
+</script>
+
+<div id="status"></div>
+<ul id="objects"></ul>
+
+<script type="text/javascript">
+  var bucket = new AWS.S3({params: {Bucket: 'uploads-laolsson-com'}});
+  bucket.listObjects(function (err, data) {
+    if (err) {
+      document.getElementById('status').innerHTML =
+        'Could not load objects from S3';
+    } else {
+      document.getElementById('status').innerHTML =
+        'Loaded ' + data.Contents.length + ' items from S3';
+      for (var i = 0; i < data.Contents.length; i++) {
+        document.getElementById('objects').innerHTML +=
+          '<li>' + data.Contents[i].Key + '</li>';
+      }
+    }
+  });
+</script>
+
+</html>
